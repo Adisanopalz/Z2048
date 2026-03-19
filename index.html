@@ -15,7 +15,6 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            /* Animated Gradient Background biar gak kaku */
             background: linear-gradient(-45deg, #faf8ef, #f2e8cf, #fdf6e3, #eee4da);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
@@ -26,7 +25,7 @@
             justify-content: center;
             height: var(--app-height);
             color: #776e65;
-            touch-action: none; /* Cegah scroll saat main */
+            touch-action: none; 
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -47,7 +46,6 @@
             padding: 1rem;
         }
 
-        /* Top Bar */
         .header {
             width: 100%;
             display: flex;
@@ -57,7 +55,6 @@
             margin-top: 1rem;
         }
 
-        /* Bouncing Title */
         @keyframes floatingTitle {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-5px); }
@@ -78,7 +75,6 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
 
-        /* Floating Score Animation (+X) */
         @keyframes floatScore {
             0% { opacity: 1; transform: translateY(0) scale(1); }
             100% { opacity: 0; transform: translateY(-40px) scale(1.5); }
@@ -95,7 +91,7 @@
             pointer-events: none;
         }
 
-        /* 2048 Grid */
+        /* 2048 Grid Utama */
         #game-board {
             width: 100%;
             max-width: 400px;
@@ -103,19 +99,31 @@
             background: #bbada0;
             border-radius: 12px;
             padding: 10px;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.1), 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        /* Container khusus grid background (kosong) */
+        .grid-container {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             grid-template-rows: repeat(4, 1fr);
             gap: 10px;
-            position: relative;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.1), 0 10px 30px rgba(0,0,0,0.1);
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 10px; left: 10px;
+            right: 10px; bottom: 10px;
+            pointer-events: none;
         }
 
         .grid-cell {
             background: rgba(238, 228, 218, 0.35);
             border-radius: 8px;
+            width: 100%; height: 100%;
         }
 
+        /* Elemen kotak angka (Tile) - Hardware Accelerated */
         .tile {
             position: absolute;
             display: flex;
@@ -124,63 +132,74 @@
             border-radius: 8px;
             font-weight: bold;
             font-size: 1.8rem;
-            transition: 100ms ease-in-out;
-            animation: pop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            top: 0; left: 0; /* Base untuk transform */
+            /* Transisi super mulus 60fps */
+            transition: transform 150ms ease-in-out, background-color 150ms ease-in-out;
+            will-change: transform; 
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
-        @keyframes pop {
+        .tile-inner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%; height: 100%;
+            border-radius: inherit;
+        }
+
+        /* Animasi pop saat tile baru muncul */
+        @keyframes popIn {
             0% { transform: scale(0); opacity: 0; }
             50% { transform: scale(1.1); }
             100% { transform: scale(1); opacity: 1; }
         }
+        .new-tile .tile-inner {
+            animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
 
+        /* Animasi meletup saat digabung */
         @keyframes mergePop {
             0% { transform: scale(1); }
             50% { transform: scale(1.2); box-shadow: 0 0 15px rgba(255,255,255,0.8); }
             100% { transform: scale(1); }
         }
-        .merged-tile {
+        .merged-tile .tile-inner {
             animation: mergePop 0.2s ease-in-out;
         }
 
-        /* Warna Tile 2048 */
-        .tile-2 { background: #eee4da; color: #776e65; }
-        .tile-4 { background: #ede0c8; color: #776e65; }
-        .tile-8 { background: #f2b179; color: #f9f6f2; }
-        .tile-16 { background: #f59563; color: #f9f6f2; }
-        .tile-32 { background: #f67c5f; color: #f9f6f2; }
-        .tile-64 { background: #f65e3b; color: #f9f6f2; }
-        .tile-128 { background: #edcf72; color: #f9f6f2; font-size: 1.5rem; }
-        .tile-256 { background: #edcc61; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 10px rgba(243, 215, 116, 0.5); }
-        .tile-512 { background: #edc850; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 15px rgba(243, 215, 116, 0.6); }
-        .tile-1024 { background: #edc53f; color: #f9f6f2; font-size: 1.2rem; box-shadow: 0 0 20px rgba(243, 215, 116, 0.7); }
-        .tile-2048 { background: #edc22e; color: #f9f6f2; font-size: 1.2rem; box-shadow: 0 0 30px rgba(243, 215, 116, 0.8); }
+        /* Styling Warna Tile 2048 */
+        .bg-2 { background: #eee4da; color: #776e65; }
+        .bg-4 { background: #ede0c8; color: #776e65; }
+        .bg-8 { background: #f2b179; color: #f9f6f2; }
+        .bg-16 { background: #f59563; color: #f9f6f2; }
+        .bg-32 { background: #f67c5f; color: #f9f6f2; }
+        .bg-64 { background: #f65e3b; color: #f9f6f2; }
+        .bg-128 { background: #edcf72; color: #f9f6f2; font-size: 1.5rem; }
+        .bg-256 { background: #edcc61; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 10px rgba(243, 215, 116, 0.5); }
+        .bg-512 { background: #edc850; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 15px rgba(243, 215, 116, 0.6); }
+        .bg-1024 { background: #edc53f; color: #f9f6f2; font-size: 1.2rem; box-shadow: 0 0 20px rgba(243, 215, 116, 0.7); }
+        .bg-2048 { background: #edc22e; color: #f9f6f2; font-size: 1.2rem; box-shadow: 0 0 30px rgba(243, 215, 116, 0.8); }
 
-        /* Kartu Kemenangan (Hidden Target) */
-        #reward-section {
-            z-index: 50;
-        }
+        /* Kartu Kemenangan */
+        #reward-section { z-index: 50; }
         #reward-card {
             background: white;
             padding: 2rem;
             border-radius: 1.5rem;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
             transform: scale(0);
             transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             border: 2px solid #e2e8f0;
         }
-        #reward-card.show {
-            transform: scale(1);
-        }
+        #reward-card.show { transform: scale(1); }
     </style>
 </head>
 <body>
 
     <div id="app-container">
-        
         <!-- Header -->
         <div class="header">
+            <!-- Easter egg: ketuk judul 5x buat nyerah/bypass -->
             <div class="title-anim cursor-pointer select-none" id="secret-trigger">
                 <h1 class="text-4xl font-extrabold text-[#776e65]">2048</h1>
                 <p class="text-sm mt-1 text-[#776e65]/70">Gabungkan angka ke 2048!</p>
@@ -193,14 +212,17 @@
 
         <!-- 2048 Board -->
         <div id="game-board">
-            <!-- Grid Background generated by JS -->
+            <div class="grid-container" id="grid-bg">
+                <!-- Background sel grid dimasukkan lewat JS -->
+            </div>
+            <!-- Tile aktif akan di-append di sini -->
         </div>
 
         <p class="mt-auto text-xs text-center text-[#776e65]/40 mb-4 font-medium flex items-center gap-1">
-            <i data-lucide="hand" class="w-3 h-3"></i> Swipe (HP) atau Arrow Keys (PC)
+            <i data-lucide="hand" class="w-3 h-3"></i> Geser layar (HP) atau arah panah (PC)
         </p>
 
-        <!-- BAGIAN 2: HADIAH RAHASIA (Link ZNovel) -->
+        <!-- LAYAR HADIAH RAHASIA -->
         <div id="reward-section" class="hidden absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
             <div id="reward-card" class="text-center max-w-sm w-full relative overflow-hidden">
                 <div class="relative z-10">
@@ -224,51 +246,51 @@
     <script>
         lucide.createIcons();
 
-        // Fix Viewport Height issue on Mobile
-        const appHeight = () => {
-            const doc = document.documentElement;
-            doc.style.setProperty('--app-height', `${window.innerHeight}px`);
-        }
+        // Fix Viewport di Mobile
+        const appHeight = () => { document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`); }
         window.addEventListener('resize', appHeight);
         appHeight();
 
-        // --- EASTER EGG LOGIC (NYERAH) ---
+        // --- EASTER EGG (KETUK JUDUL 5X UNTUK BYPASS) ---
         let titleTapCount = 0;
         let titleTapTimer;
         document.getElementById('secret-trigger').addEventListener('click', () => {
             titleTapCount++;
             clearTimeout(titleTapTimer);
-            
-            // Tambahkan efek suara misterius tiap ketukan
             initAudio();
             if(audioCtx) {
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.connect(gain); gain.connect(audioCtx.destination);
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(600 + (titleTapCount * 150), audioCtx.currentTime); // Nada makin naik
+                osc.frequency.setValueAtTime(600 + (titleTapCount * 150), audioCtx.currentTime); 
                 gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
                 osc.start(); osc.stop(audioCtx.currentTime + 0.1);
             }
-
             if (titleTapCount >= 5) {
-                showReward(true); // Panggil fungsi nyerah/menang
+                showReward(true); 
                 titleTapCount = 0;
             } else {
-                titleTapTimer = setTimeout(() => {
-                    titleTapCount = 0;
-                }, 1000); // Hitungan direset kalau jeda ketukan kelamaan
+                titleTapTimer = setTimeout(() => { titleTapCount = 0; }, 1000); 
             }
         });
 
-        // --- AUDIO ENGINE ---
+        // --- SISTEM SUARA & GETARAN (HAPTIC) ---
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx;
 
         function initAudio() {
             if (!audioCtx) audioCtx = new AudioContext();
             if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function triggerHaptic(type) {
+            if (navigator.vibrate) {
+                if (type === 'slide') navigator.vibrate(10); // Getaran sangat halus
+                else if (type === 'merge') navigator.vibrate(25); // Getaran agak kuat
+                else if (type === 'gameover') navigator.vibrate([50, 50, 50]); 
+            }
         }
 
         function playSound(type) {
@@ -278,7 +300,6 @@
             osc.connect(gain); gain.connect(audioCtx.destination);
 
             if (type === 'slide') {
-                // Bunyi swoosh/gesek pelan
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(200, audioCtx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.05);
@@ -286,7 +307,6 @@
                 gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
                 osc.start(); osc.stop(audioCtx.currentTime + 0.05);
             } else if (type === 'merge') {
-                // Bunyi pop/ting saat gabung
                 osc.type = 'triangle';
                 osc.frequency.setValueAtTime(500, audioCtx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
@@ -294,7 +314,6 @@
                 gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
                 osc.start(); osc.stop(audioCtx.currentTime + 0.1);
             } else if (type === 'tada') {
-                // Bunyi kejutan saat pop up muncul
                 const chords = [523.25, 659.25, 783.99, 1046.50];
                 chords.forEach((freq, i) => {
                     setTimeout(() => {
@@ -311,87 +330,234 @@
             }
         }
 
-        // --- 2048 GAME LOGIC ---
+        // --- 2048 ENGINE BARU (SMOOTH SLIDE) ---
         const boardSize = 4;
-        let grid = [];
+        let grid = []; // 2D array untuk melacak tile logic
+        let tiles = []; // 1D array untuk merender DOM agar tidak kaku dihapus
+        let tileIdCounter = 0;
         let score = 0;
-        const gameBoard = document.getElementById('game-board');
-        const scoreElement = document.getElementById('score');
-        const scoreContainer = document.getElementById('score-container');
         let gameActive = true;
         let justMergedPoints = 0;
+        let deletedTilesThisTurn = [];
 
-        // Initialize grid
+        const gameBoard = document.getElementById('game-board');
+        const gridBg = document.getElementById('grid-bg');
+        const scoreElement = document.getElementById('score');
+        const scoreContainer = document.getElementById('score-container');
+
+        // Buat grid abu-abu polos sebagai alas
+        function initGridBg() {
+            gridBg.innerHTML = '';
+            for (let i = 0; i < boardSize * boardSize; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                gridBg.appendChild(cell);
+            }
+        }
+
         function initGame() {
-            gameBoard.innerHTML = '';
-            grid = [];
+            initGridBg();
+            
+            // Hapus elemen div lama
+            document.querySelectorAll('.tile').forEach(t => t.remove());
+            
+            grid = Array(boardSize).fill().map(() => Array(boardSize).fill(null));
+            tiles = [];
             score = 0;
             scoreElement.innerText = score;
             gameActive = true;
 
-            for (let i = 0; i < boardSize * boardSize; i++) {
-                const cell = document.createElement('div');
-                cell.className = 'grid-cell';
-                gameBoard.appendChild(cell);
-            }
-
-            for (let r = 0; r < boardSize; r++) {
-                grid.push(new Array(boardSize).fill(0));
-            }
-
             addRandomTile();
             addRandomTile();
-            renderBoard();
+            renderTiles();
         }
 
         function addRandomTile() {
-            let emptyCells = [];
+            let empty = [];
             for (let r = 0; r < boardSize; r++) {
                 for (let c = 0; c < boardSize; c++) {
-                    if (grid[r][c] === 0) {
-                        emptyCells.push({ r, c });
-                    }
+                    if (!grid[r][c]) empty.push({ r, c });
                 }
             }
-
-            if (emptyCells.length > 0) {
-                let randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-                grid[randomCell.r][randomCell.c] = Math.random() < 0.9 ? 2 : 4;
+            if (empty.length > 0) {
+                let pos = empty[Math.floor(Math.random() * empty.length)];
+                let val = Math.random() < 0.9 ? 2 : 4;
+                
+                let newTile = {
+                    id: tileIdCounter++,
+                    r: pos.r, c: pos.c,
+                    value: val,
+                    isNew: true,
+                    isMerged: false
+                };
+                
+                grid[pos.r][pos.c] = newTile;
+                tiles.push(newTile);
             }
         }
 
-        function renderBoard() {
-            document.querySelectorAll('.tile').forEach(tile => tile.remove());
+        // Logic memproses baris saat di-swipe
+        function processLine(line) {
+            let newLine = [];
+            let i = 0;
+            while (i < line.length) {
+                // Jika angka sama dan bersebelahan, maka gabung
+                if (i < line.length - 1 && line[i].value === line[i + 1].value) {
+                    let target = line[i];
+                    let source = line[i + 1];
+                    
+                    target.value *= 2;
+                    target.isMerged = true;
+                    
+                    source.isDeleted = true;
+                    source.mergeTarget = target; // Supaya tau mau geser (slide) ke mana
+                    deletedTilesThisTurn.push(source);
+                    
+                    newLine.push(target);
+                    score += target.value;
+                    justMergedPoints += target.value;
+                    i += 2;
+                } else {
+                    newLine.push(line[i]);
+                    i++;
+                }
+            }
+            return newLine;
+        }
 
-            const cellWidth = gameBoard.clientWidth / boardSize;
-            const gap = 10; 
+        function move(direction) {
+            let moved = false;
+            justMergedPoints = 0;
+            deletedTilesThisTurn = [];
 
-            for (let r = 0; r < boardSize; r++) {
-                for (let c = 0; c < boardSize; c++) {
-                    if (grid[r][c] !== 0) {
-                        const tile = document.createElement('div');
-                        const value = grid[r][c];
-                        tile.className = `tile tile-${value > 2048 ? '2048' : value}`;
-                        tile.innerText = value;
+            // Reset status animasi
+            tiles.forEach(t => { t.isNew = false; t.isMerged = false; });
+
+            if (direction === 'Left' || direction === 'Right') {
+                for (let r = 0; r < boardSize; r++) {
+                    let line = [];
+                    for (let c = 0; c < boardSize; c++) if (grid[r][c]) line.push(grid[r][c]);
+                    if (direction === 'Right') line.reverse();
+                    
+                    let newLine = processLine(line);
+                    
+                    for (let c = 0; c < boardSize; c++) {
+                        let actualC = direction === 'Right' ? boardSize - 1 - c : c;
+                        grid[r][actualC] = c < newLine.length ? newLine[c] : null;
                         
-                        const top = r * (cellWidth) + 10;
-                        const left = c * (cellWidth) + 10;
-                        const size = cellWidth - gap;
-
-                        tile.style.top = `${top}px`;
-                        tile.style.left = `${left}px`;
-                        tile.style.width = `${size}px`;
-                        tile.style.height = `${size}px`;
-
-                        gameBoard.appendChild(tile);
+                        if (grid[r][actualC]) {
+                            if (grid[r][actualC].r !== r || grid[r][actualC].c !== actualC) moved = true;
+                            grid[r][actualC].r = r;
+                            grid[r][actualC].c = actualC;
+                        }
+                    }
+                }
+            } else if (direction === 'Up' || direction === 'Down') {
+                for (let c = 0; c < boardSize; c++) {
+                    let line = [];
+                    for (let r = 0; r < boardSize; r++) if (grid[r][c]) line.push(grid[r][c]);
+                    if (direction === 'Down') line.reverse();
+                    
+                    let newLine = processLine(line);
+                    
+                    for (let r = 0; r < boardSize; r++) {
+                        let actualR = direction === 'Down' ? boardSize - 1 - r : r;
+                        grid[actualR][c] = r < newLine.length ? newLine[r] : null;
+                        
+                        if (grid[actualR][c]) {
+                            if (grid[actualR][c].r !== actualR || grid[actualR][c].c !== c) moved = true;
+                            grid[actualR][c].r = actualR;
+                            grid[actualR][c].c = c;
+                        }
                     }
                 }
             }
+
+            // Update koordinat target untuk elemen yang hancur agar efek meluncur terlihat
+            deletedTilesThisTurn.forEach(t => {
+                t.r = t.mergeTarget.r;
+                t.c = t.mergeTarget.c;
+            });
+
+            return moved || deletedTilesThisTurn.length > 0;
         }
 
-        // Animasi floating score (+X)
+        function checkGameOver() {
+            for (let r = 0; r < boardSize; r++) {
+                for (let c = 0; c < boardSize; c++) {
+                    if (!grid[r][c]) return false;
+                    let val = grid[r][c].value;
+                    if (r < boardSize - 1 && grid[r + 1][c] && grid[r + 1][c].value === val) return false;
+                    if (c < boardSize - 1 && grid[r][c + 1] && grid[r][c + 1].value === val) return false;
+                }
+            }
+            return true;
+        }
+
+        // Merender ulang kotak tanpa menghancurkan elemen DOM (Anti-Lag/Smooth)
+        function renderTiles() {
+            const cellWidth = (gameBoard.clientWidth - 20) / boardSize; 
+            const gap = 10;
+            const size = cellWidth - gap + (gap / boardSize);
+
+            // Render semua tile (termasuk yang mau dihapus karena masih perlu animasi slide)
+            let allRenderingTiles = tiles.concat(deletedTilesThisTurn);
+
+            allRenderingTiles.forEach(tile => {
+                let el = document.getElementById(`t-${tile.id}`);
+                
+                // Buat elemen baru jika belum ada
+                if (!el) {
+                    el = document.createElement('div');
+                    el.id = `t-${tile.id}`;
+                    el.className = 'tile';
+                    
+                    let inner = document.createElement('div');
+                    inner.className = 'tile-inner';
+                    el.appendChild(inner);
+                    gameBoard.appendChild(el);
+                }
+
+                // Hitung posisi transisi
+                const x = 10 + tile.c * cellWidth;
+                const y = 10 + tile.r * cellWidth;
+
+                // Set style (Hardware Accelerated Translation)
+                el.style.transform = `translate(${x}px, ${y}px)`;
+                el.style.width = `${size}px`;
+                el.style.height = `${size}px`;
+
+                let inner = el.querySelector('.tile-inner');
+                inner.innerText = tile.value;
+                inner.className = `tile-inner bg-${tile.value > 2048 ? '2048' : tile.value}`;
+
+                if (tile.isNew) el.classList.add('new-tile');
+                else el.classList.remove('new-tile');
+
+                if (tile.isMerged) el.classList.add('merged-tile');
+                else el.classList.remove('merged-tile');
+
+                if (tile.isDeleted) {
+                    el.style.zIndex = '0'; // Biar elemen numpuk di bawah
+                } else {
+                    el.style.zIndex = '10';
+                }
+            });
+
+            // Bersihkan elemen yang hancur setelah animasi meluncur selesai (150ms)
+            let cleanupList = [...deletedTilesThisTurn];
+            tiles = tiles.filter(t => !t.isDeleted); // Hapus dari tracker memori
+            
+            setTimeout(() => {
+                cleanupList.forEach(t => {
+                    let el = document.getElementById(`t-${t.id}`);
+                    if (el) el.remove();
+                });
+            }, 150);
+        }
+
         function showFloatingScore(points) {
-            if(points <= 0) return;
+            if (points <= 0) return;
             const addition = document.createElement('div');
             addition.className = 'score-addition';
             addition.innerText = `+${points}`;
@@ -399,91 +565,26 @@
             setTimeout(() => addition.remove(), 800);
         }
 
-        // --- Gerakan (Slide & Merge) ---
-        function slide(row) {
-            let arr = row.filter(val => val);
-            let missing = boardSize - arr.length;
-            let zeros = Array(missing).fill(0);
-            return arr.concat(zeros);
-        }
-
-        function combine(row) {
-            for (let i = 0; i < boardSize - 1; i++) {
-                if (row[i] !== 0 && row[i] === row[i + 1]) {
-                    row[i] *= 2;
-                    row[i + 1] = 0;
-                    score += row[i];
-                    justMergedPoints += row[i]; // Kumpulkan poin merge dalam 1 gerakan
-                }
-            }
-            return row;
-        }
-
-        function move(direction) {
-            let moved = false;
-            justMergedPoints = 0;
-
-            for (let i = 0; i < boardSize; i++) {
-                let line = [];
-                // Ambil line berdasarkan arah
-                for (let j = 0; j < boardSize; j++) {
-                    if (direction === 'Left' || direction === 'Right') line.push(grid[i][j]);
-                    else line.push(grid[j][i]);
-                }
-
-                let oldLine = [...line];
-
-                if (direction === 'Right' || direction === 'Down') line.reverse();
-                line = slide(line);
-                line = combine(line);
-                line = slide(line);
-                if (direction === 'Right' || direction === 'Down') line.reverse();
-
-                // Kembalikan ke grid
-                for (let j = 0; j < boardSize; j++) {
-                    if (direction === 'Left' || direction === 'Right') grid[i][j] = line[j];
-                    else grid[j][i] = line[j];
-                }
-
-                if (oldLine.join(',') !== line.join(',')) moved = true;
-            }
-            return moved;
-        }
-
-        function checkGameOver() {
-            for (let r = 0; r < boardSize; r++) {
-                for (let c = 0; c < boardSize; c++) {
-                    if (grid[r][c] === 0) return false;
-                }
-            }
-            for (let r = 0; r < boardSize; r++) {
-                for (let c = 0; c < boardSize; c++) {
-                    let current = grid[r][c];
-                    if (r < boardSize - 1 && grid[r + 1][c] === current) return false;
-                    if (c < boardSize - 1 && grid[r][c + 1] === current) return false;
-                }
-            }
-            return true;
-        }
-
         function handleInput(direction) {
             if (!gameActive) return;
-            initAudio(); // Pastikan audio aktif
+            initAudio(); 
 
             let moved = move(direction);
 
             if (moved) {
-                // Audio Feedback
+                // Haptic & Audio
                 if (justMergedPoints > 0) {
+                    triggerHaptic('merge');
                     playSound('merge');
                     showFloatingScore(justMergedPoints);
                     scoreElement.innerText = score;
                 } else {
+                    triggerHaptic('slide');
                     playSound('slide');
                 }
 
                 addRandomTile();
-                renderBoard();
+                renderTiles();
 
                 if (checkGameOver()) {
                     gameActive = false;
@@ -492,7 +593,7 @@
             }
         }
 
-        // --- Controls Keyboard ---
+        // --- Controls Keyboard PC ---
         document.addEventListener('keydown', (e) => {
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
                 e.preventDefault(); 
@@ -500,28 +601,27 @@
             }
         });
 
-        // --- Controls Swipe (Touch) ---
+        // --- Controls Swipe HP ---
         let touchStartX = 0;
         let touchStartY = 0;
+        
         gameBoard.addEventListener('touchstart', e => {
             touchStartX = e.changedTouches[0].screenX;
             touchStartY = e.changedTouches[0].screenY;
         }, { passive: false });
 
         gameBoard.addEventListener('touchmove', e => {
-            e.preventDefault(); 
+            e.preventDefault(); // Mengunci scroll saat nyentuh papan
         }, { passive: false });
 
         gameBoard.addEventListener('touchend', e => {
             let touchEndX = e.changedTouches[0].screenX;
             let touchEndY = e.changedTouches[0].screenY;
-            handleSwipe(touchStartX, touchStartY, touchEndX, touchEndY);
-        });
-
-        function handleSwipe(startX, startY, endX, endY) {
-            let dx = endX - startX;
-            let dy = endY - startY;
             
+            let dx = touchEndX - touchStartX;
+            let dy = touchEndY - touchStartY;
+            
+            // Sensitivitas Swipe
             if (Math.abs(dx) < 30 && Math.abs(dy) < 30) return;
 
             if (Math.abs(dx) > Math.abs(dy)) {
@@ -531,11 +631,12 @@
                 if (dy > 0) handleInput('Down');
                 else handleInput('Up');
             }
-        }
+        });
 
         // --- TAMPILKAN HADIAH (PLOT TWIST) ---
         function showReward(isSurrender = false) {
             initAudio();
+            triggerHaptic('gameover');
             gameActive = false;
             
             const title = document.getElementById('reward-title');
@@ -556,14 +657,14 @@
             rewardSection.classList.remove('hidden');
             setTimeout(() => {
                 rewardCard.classList.add('show');
-                playSound('tada'); // Suara kejutan muncul!
+                playSound('tada'); 
             }, 100);
         }
 
-        // Resize event 
-        window.addEventListener('resize', renderBoard);
+        // Render saat ukuran layar HP berubah
+        window.addEventListener('resize', renderTiles);
 
-        // Start!
+        // Mulai
         initGame();
 
     </script>
