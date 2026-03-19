@@ -6,18 +6,19 @@
     <title>2048 - Play Now</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
     
     <style>
         :root {
             --app-height: 100vh;
+            --board-bg: #bbada0;
+            --cell-empty: rgba(238, 228, 218, 0.35);
         }
 
         body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(-45deg, #faf8ef, #f2e8cf, #fdf6e3, #eee4da);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+            /* Font Nunito memberikan kesan game yang lebih bulat dan "bouncy" */
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
             margin: 0;
             overflow: hidden;
             display: flex;
@@ -29,21 +30,15 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
         #app-container {
             width: 100%;
             height: 100%;
-            max-width: 480px;
+            max-width: 500px;
             position: relative;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 1rem;
+            padding: 1.5rem 1rem;
         }
 
         .header {
@@ -52,27 +47,25 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 2rem;
-            margin-top: 1rem;
         }
 
         @keyframes floatingTitle {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
+            50% { transform: translateY(-3px); }
         }
         .title-anim {
             animation: floatingTitle 3s ease-in-out infinite;
-            text-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
         .score-container {
             background: #bbada0;
-            padding: 0.5rem 1.2rem;
-            border-radius: 8px;
+            padding: 0.5rem 1.5rem;
+            border-radius: 12px;
             color: white;
             text-align: center;
-            font-weight: bold;
+            font-weight: 800;
             position: relative;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
         @keyframes floatScore {
@@ -81,62 +74,53 @@
         }
         .score-addition {
             position: absolute;
-            right: 15px;
-            bottom: 10px;
-            color: rgba(119, 110, 101, 0.9);
+            right: 20px;
+            bottom: 15px;
+            color: #776e65;
             font-size: 1.2rem;
-            font-weight: bold;
+            font-weight: 900;
             z-index: 100;
-            animation: floatScore 0.8s ease-out forwards;
+            animation: floatScore 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
             pointer-events: none;
         }
 
-        /* 2048 Grid Utama */
+        /* 2048 Game Board */
         #game-board {
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             aspect-ratio: 1;
-            background: #bbada0;
-            border-radius: 12px;
-            padding: 10px;
+            background: var(--board-bg);
+            border-radius: 16px;
             position: relative;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.1), 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(187, 173, 160, 0.4);
+            /* Memastikan touch area responsif */
+            touch-action: none;
         }
 
-        /* Container khusus grid background (kosong) */
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(4, 1fr);
-            gap: 10px;
-            width: 100%;
-            height: 100%;
+        /* Layer untuk kotak alas (background cells) */
+        #grid-bg {
             position: absolute;
-            top: 10px; left: 10px;
-            right: 10px; bottom: 10px;
+            inset: 0;
             pointer-events: none;
         }
 
         .grid-cell {
-            background: rgba(238, 228, 218, 0.35);
-            border-radius: 8px;
-            width: 100%; height: 100%;
+            position: absolute;
+            background: var(--cell-empty);
+            border-radius: 10px;
         }
 
-        /* Elemen kotak angka (Tile) - Hardware Accelerated */
+        /* Elemen Tile (Kotak Angka) */
         .tile {
             position: absolute;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 1.8rem;
-            top: 0; left: 0; /* Base untuk transform */
-            /* Transisi super mulus 60fps */
-            transition: transform 150ms ease-in-out, background-color 150ms ease-in-out;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 2rem;
+            top: 0; left: 0;
+            /* Animasi geser super mulus */
+            transition: transform 120ms ease-in-out;
             will-change: transform; 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
 
         .tile-inner {
@@ -145,53 +129,61 @@
             align-items: center;
             width: 100%; height: 100%;
             border-radius: inherit;
+            /* Efek sedikit 3D pada kotaknya */
+            box-shadow: inset 0 -3px 0 rgba(0,0,0,0.08);
+            transition: background-color 150ms ease;
         }
 
-        /* Animasi pop saat tile baru muncul */
+        /* Animasi Muncul */
         @keyframes popIn {
-            0% { transform: scale(0); opacity: 0; }
-            50% { transform: scale(1.1); }
+            0% { transform: scale(0.5); opacity: 0; }
+            80% { transform: scale(1.1); opacity: 1; }
             100% { transform: scale(1); opacity: 1; }
         }
         .new-tile .tile-inner {
-            animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
 
-        /* Animasi meletup saat digabung */
+        /* Animasi Gabung */
         @keyframes mergePop {
             0% { transform: scale(1); }
-            50% { transform: scale(1.2); box-shadow: 0 0 15px rgba(255,255,255,0.8); }
+            50% { transform: scale(1.15); box-shadow: 0 0 20px rgba(255,255,255,0.8); }
             100% { transform: scale(1); }
         }
         .merged-tile .tile-inner {
-            animation: mergePop 0.2s ease-in-out;
+            animation: mergePop 0.2s ease-in-out forwards;
         }
 
-        /* Styling Warna Tile 2048 */
+        /* Palet Warna Premium 2048 */
         .bg-2 { background: #eee4da; color: #776e65; }
         .bg-4 { background: #ede0c8; color: #776e65; }
-        .bg-8 { background: #f2b179; color: #f9f6f2; }
-        .bg-16 { background: #f59563; color: #f9f6f2; }
-        .bg-32 { background: #f67c5f; color: #f9f6f2; }
-        .bg-64 { background: #f65e3b; color: #f9f6f2; }
-        .bg-128 { background: #edcf72; color: #f9f6f2; font-size: 1.5rem; }
-        .bg-256 { background: #edcc61; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 10px rgba(243, 215, 116, 0.5); }
-        .bg-512 { background: #edc850; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 15px rgba(243, 215, 116, 0.6); }
-        .bg-1024 { background: #edc53f; color: #f9f6f2; font-size: 1.2rem; box-shadow: 0 0 20px rgba(243, 215, 116, 0.7); }
-        .bg-2048 { background: #edc22e; color: #f9f6f2; font-size: 1.2rem; box-shadow: 0 0 30px rgba(243, 215, 116, 0.8); }
+        .bg-8 { background: #f2b179; color: #fff; }
+        .bg-16 { background: #f59563; color: #fff; }
+        .bg-32 { background: #f67c5f; color: #fff; }
+        .bg-64 { background: #f65e3b; color: #fff; }
+        .bg-128 { background: #edcf72; color: #fff; font-size: 1.6rem; box-shadow: 0 0 10px rgba(237, 207, 114, 0.3), inset 0 -3px 0 rgba(0,0,0,0.1) !important; }
+        .bg-256 { background: #edcc61; color: #fff; font-size: 1.6rem; box-shadow: 0 0 15px rgba(237, 204, 97, 0.4), inset 0 -3px 0 rgba(0,0,0,0.1) !important; }
+        .bg-512 { background: #edc850; color: #fff; font-size: 1.6rem; box-shadow: 0 0 20px rgba(237, 200, 80, 0.5), inset 0 -3px 0 rgba(0,0,0,0.1) !important; }
+        .bg-1024 { background: #edc53f; color: #fff; font-size: 1.3rem; box-shadow: 0 0 25px rgba(237, 197, 63, 0.6), inset 0 -3px 0 rgba(0,0,0,0.1) !important; }
+        .bg-2048 { background: #edc22e; color: #fff; font-size: 1.3rem; box-shadow: 0 0 30px rgba(237, 194, 46, 0.8), inset 0 -3px 0 rgba(0,0,0,0.1) !important; }
 
-        /* Kartu Kemenangan */
-        #reward-section { z-index: 50; }
+        /* Kartu Kemenangan (Reward) */
+        #reward-section { z-index: 100; }
         #reward-card {
             background: white;
-            padding: 2rem;
-            border-radius: 1.5rem;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            transform: scale(0);
-            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border: 2px solid #e2e8f0;
+            padding: 2.5rem 2rem;
+            border-radius: 2rem;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+            transform: scale(0) translateY(50px);
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid #f1f5f9;
         }
-        #reward-card.show { transform: scale(1); }
+        #reward-card.show { 
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+        
     </style>
 </head>
 <body>
@@ -201,41 +193,43 @@
         <div class="header">
             <!-- Easter egg: ketuk judul 5x buat nyerah/bypass -->
             <div class="title-anim cursor-pointer select-none" id="secret-trigger">
-                <h1 class="text-4xl font-extrabold text-[#776e65]">2048</h1>
-                <p class="text-sm mt-1 text-[#776e65]/70">Gabungkan angka ke 2048!</p>
+                <h1 class="text-5xl font-black text-[#776e65] drop-shadow-sm">2048</h1>
+                <p class="text-sm mt-1 text-[#776e65]/70 font-bold">Gabungkan angka!</p>
             </div>
             <div class="score-container" id="score-container">
-                <div class="text-[10px] uppercase tracking-wider text-[#eee4da]">Skor</div>
-                <div id="score" class="text-2xl leading-none mt-1">0</div>
+                <div class="text-[11px] uppercase tracking-widest text-[#eee4da]">Skor</div>
+                <div id="score" class="text-3xl leading-none mt-1">0</div>
             </div>
         </div>
 
         <!-- 2048 Board -->
         <div id="game-board">
-            <div class="grid-container" id="grid-bg">
-                <!-- Background sel grid dimasukkan lewat JS -->
+            <div id="grid-bg">
+                <!-- Background sel grid dimasukkan lewat JS supaya hitungannya akurat 100% -->
             </div>
-            <!-- Tile aktif akan di-append di sini -->
+            <!-- Tile aktif akan di-append di sini secara otomatis -->
         </div>
 
-        <p class="mt-auto text-xs text-center text-[#776e65]/40 mb-4 font-medium flex items-center gap-1">
-            <i data-lucide="hand" class="w-3 h-3"></i> Geser layar (HP) atau arah panah (PC)
+        <p class="mt-auto text-xs text-center text-[#776e65]/50 mb-4 font-bold flex items-center gap-1.5 bg-white/50 px-4 py-2 rounded-full shadow-sm">
+            <i data-lucide="hand" class="w-4 h-4"></i> Swipe (Layar) / Arah Panah (PC)
         </p>
 
         <!-- LAYAR HADIAH RAHASIA -->
-        <div id="reward-section" class="hidden absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
+        <div id="reward-section" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6">
             <div id="reward-card" class="text-center max-w-sm w-full relative overflow-hidden">
                 <div class="relative z-10">
-                    <i id="reward-icon" data-lucide="skull" class="w-16 h-16 text-slate-800 mx-auto mb-4"></i>
-                    <h2 id="reward-title" class="text-2xl font-bold text-slate-800 mb-2">Yaaah, Game Over!</h2>
-                    <p class="text-slate-600 mb-8 text-sm leading-relaxed">
+                    <div class="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                        <i id="reward-icon" data-lucide="skull" class="w-10 h-10 text-emerald-600"></i>
+                    </div>
+                    <h2 id="reward-title" class="text-3xl font-black text-slate-800 mb-2">Game Over!</h2>
+                    <p class="text-slate-600 mb-8 text-sm leading-relaxed font-medium">
                         Kamu mikir ini game beneran?<br>
-                        <span class="font-bold text-emerald-500 animate-pulse block my-2">INI CUMA PENGALIHAN ISU AJA WKWK! 🤣</span>
-                        Tujuan aslinya aku ngirimin link ini tuh buat ngasih kamu sesuatu. Coba buka link rahasia di bawah ini:
+                        <span class="font-black text-emerald-500 text-base animate-pulse block my-2">CUMA PENGALIHAN ISU AJA WKWK! 🤣</span>
+                        Tujuan aslinya aku ngirimin link ini tuh buat ngasih kamu sesuatu. Coba klik di bawah:
                     </p>
                     
-                    <button onclick="window.location.href='https://znovel.vercel.app/'" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 px-6 rounded-2xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2 group">
-                        BUKA ZNOVEL <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+                    <button onclick="window.location.href='https://znovel.vercel.app/'" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 px-6 rounded-2xl shadow-[0_8px_20px_rgba(16,185,129,0.4)] transition-transform active:scale-95 flex items-center justify-center gap-2 group text-lg">
+                        BUKA ZNOVEL <i data-lucide="arrow-right" class="w-6 h-6 group-hover:translate-x-1 transition-transform"></i>
                     </button>
                 </div>
             </div>
@@ -250,6 +244,60 @@
         const appHeight = () => { document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`); }
         window.addEventListener('resize', appHeight);
         appHeight();
+
+        // --- SISTEM SUARA & GETARAN (HAPTIC) ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function triggerHaptic(type) {
+            if (navigator.vibrate) {
+                if (type === 'slide') navigator.vibrate(10); 
+                else if (type === 'merge') navigator.vibrate(25); 
+                else if (type === 'gameover') navigator.vibrate([50, 50, 50]); 
+            }
+        }
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+
+            if (type === 'slide') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(250, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+            } else if (type === 'merge') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(900, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'tada') {
+                const chords = [523.25, 659.25, 783.99, 1046.50];
+                chords.forEach((freq, i) => {
+                    setTimeout(() => {
+                        const o = audioCtx.createOscillator(); 
+                        const g = audioCtx.createGain();
+                        o.connect(g); g.connect(audioCtx.destination);
+                        o.type = 'triangle'; 
+                        o.frequency.value = freq;
+                        g.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+                        o.start(); o.stop(audioCtx.currentTime + 0.5);
+                    }, i * 100);
+                });
+            }
+        }
 
         // --- EASTER EGG (KETUK JUDUL 5X UNTUK BYPASS) ---
         let titleTapCount = 0;
@@ -276,64 +324,10 @@
             }
         });
 
-        // --- SISTEM SUARA & GETARAN (HAPTIC) ---
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        let audioCtx;
-
-        function initAudio() {
-            if (!audioCtx) audioCtx = new AudioContext();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-        }
-
-        function triggerHaptic(type) {
-            if (navigator.vibrate) {
-                if (type === 'slide') navigator.vibrate(10); // Getaran sangat halus
-                else if (type === 'merge') navigator.vibrate(25); // Getaran agak kuat
-                else if (type === 'gameover') navigator.vibrate([50, 50, 50]); 
-            }
-        }
-
-        function playSound(type) {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
-
-            if (type === 'slide') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.05);
-                gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.05);
-            } else if (type === 'merge') {
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(500, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-            } else if (type === 'tada') {
-                const chords = [523.25, 659.25, 783.99, 1046.50];
-                chords.forEach((freq, i) => {
-                    setTimeout(() => {
-                        const o = audioCtx.createOscillator(); 
-                        const g = audioCtx.createGain();
-                        o.connect(g); g.connect(audioCtx.destination);
-                        o.type = 'triangle'; 
-                        o.frequency.value = freq;
-                        g.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
-                        o.start(); o.stop(audioCtx.currentTime + 0.5);
-                    }, i * 100);
-                });
-            }
-        }
-
-        // --- 2048 ENGINE BARU (SMOOTH SLIDE) ---
+        // --- 2048 ENGINE BARU (PRESISI GRID) ---
         const boardSize = 4;
-        let grid = []; // 2D array untuk melacak tile logic
-        let tiles = []; // 1D array untuk merender DOM agar tidak kaku dihapus
+        let grid = []; 
+        let tiles = []; 
         let tileIdCounter = 0;
         let score = 0;
         let gameActive = true;
@@ -345,22 +339,43 @@
         const scoreElement = document.getElementById('score');
         const scoreContainer = document.getElementById('score-container');
 
-        // Buat grid abu-abu polos sebagai alas
+        // Parameter Layout Dasar
+        const padding = 12; // Jarak tepi luar papan
+        const gap = 12; // Jarak antar kotak
+
+        // Hitung ukuran sel secara matematis agar background dan foreground 100% sejajar
+        function getTileDimensions() {
+            const boardWidth = gameBoard.clientWidth;
+            const innerWidth = boardWidth - (padding * 2);
+            const tileSize = (innerWidth - (gap * (boardSize - 1))) / boardSize;
+            return tileSize;
+        }
+
+        // Buat grid alas (background) menggunakan absolute positioning
         function initGridBg() {
             gridBg.innerHTML = '';
-            for (let i = 0; i < boardSize * boardSize; i++) {
-                const cell = document.createElement('div');
-                cell.className = 'grid-cell';
-                gridBg.appendChild(cell);
+            const tileSize = getTileDimensions();
+
+            for (let r = 0; r < boardSize; r++) {
+                for (let c = 0; c < boardSize; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    
+                    const x = padding + c * (tileSize + gap);
+                    const y = padding + r * (tileSize + gap);
+                    
+                    cell.style.transform = `translate(${x}px, ${y}px)`;
+                    cell.style.width = `${tileSize}px`;
+                    cell.style.height = `${tileSize}px`;
+                    gridBg.appendChild(cell);
+                }
             }
         }
 
         function initGame() {
             initGridBg();
             
-            // Hapus elemen div lama
             document.querySelectorAll('.tile').forEach(t => t.remove());
-            
             grid = Array(boardSize).fill().map(() => Array(boardSize).fill(null));
             tiles = [];
             score = 0;
@@ -396,12 +411,11 @@
             }
         }
 
-        // Logic memproses baris saat di-swipe
+        // Logic memproses baris saat digeser
         function processLine(line) {
             let newLine = [];
             let i = 0;
             while (i < line.length) {
-                // Jika angka sama dan bersebelahan, maka gabung
                 if (i < line.length - 1 && line[i].value === line[i + 1].value) {
                     let target = line[i];
                     let source = line[i + 1];
@@ -410,7 +424,7 @@
                     target.isMerged = true;
                     
                     source.isDeleted = true;
-                    source.mergeTarget = target; // Supaya tau mau geser (slide) ke mana
+                    source.mergeTarget = target; 
                     deletedTilesThisTurn.push(source);
                     
                     newLine.push(target);
@@ -430,7 +444,6 @@
             justMergedPoints = 0;
             deletedTilesThisTurn = [];
 
-            // Reset status animasi
             tiles.forEach(t => { t.isNew = false; t.isMerged = false; });
 
             if (direction === 'Left' || direction === 'Right') {
@@ -473,7 +486,7 @@
                 }
             }
 
-            // Update koordinat target untuk elemen yang hancur agar efek meluncur terlihat
+            // Atur posisi tujuan untuk kotak yang menabrak/dihapus (biar animasinya ngejar)
             deletedTilesThisTurn.forEach(t => {
                 t.r = t.mergeTarget.r;
                 t.c = t.mergeTarget.c;
@@ -494,19 +507,14 @@
             return true;
         }
 
-        // Merender ulang kotak tanpa menghancurkan elemen DOM (Anti-Lag/Smooth)
+        // Merender ulang kotak tanpa bug layout (presisi matematis)
         function renderTiles() {
-            const cellWidth = (gameBoard.clientWidth - 20) / boardSize; 
-            const gap = 10;
-            const size = cellWidth - gap + (gap / boardSize);
-
-            // Render semua tile (termasuk yang mau dihapus karena masih perlu animasi slide)
+            const tileSize = getTileDimensions();
             let allRenderingTiles = tiles.concat(deletedTilesThisTurn);
 
             allRenderingTiles.forEach(tile => {
                 let el = document.getElementById(`t-${tile.id}`);
                 
-                // Buat elemen baru jika belum ada
                 if (!el) {
                     el = document.createElement('div');
                     el.id = `t-${tile.id}`;
@@ -518,14 +526,13 @@
                     gameBoard.appendChild(el);
                 }
 
-                // Hitung posisi transisi
-                const x = 10 + tile.c * cellWidth;
-                const y = 10 + tile.r * cellWidth;
+                // Kalkulasi absolute (Pasti 100% cocok dengan grid alas)
+                const x = padding + tile.c * (tileSize + gap);
+                const y = padding + tile.r * (tileSize + gap);
 
-                // Set style (Hardware Accelerated Translation)
                 el.style.transform = `translate(${x}px, ${y}px)`;
-                el.style.width = `${size}px`;
-                el.style.height = `${size}px`;
+                el.style.width = `${tileSize}px`;
+                el.style.height = `${tileSize}px`;
 
                 let inner = el.querySelector('.tile-inner');
                 inner.innerText = tile.value;
@@ -537,23 +544,21 @@
                 if (tile.isMerged) el.classList.add('merged-tile');
                 else el.classList.remove('merged-tile');
 
-                if (tile.isDeleted) {
-                    el.style.zIndex = '0'; // Biar elemen numpuk di bawah
-                } else {
-                    el.style.zIndex = '10';
-                }
+                // Taruh kotak yang hancur di bawah kotak yang baru bergabung
+                if (tile.isDeleted) el.style.zIndex = '0'; 
+                else el.style.zIndex = '10';
             });
 
-            // Bersihkan elemen yang hancur setelah animasi meluncur selesai (150ms)
+            // Clean up memory
             let cleanupList = [...deletedTilesThisTurn];
-            tiles = tiles.filter(t => !t.isDeleted); // Hapus dari tracker memori
+            tiles = tiles.filter(t => !t.isDeleted); 
             
             setTimeout(() => {
                 cleanupList.forEach(t => {
                     let el = document.getElementById(`t-${t.id}`);
                     if (el) el.remove();
                 });
-            }, 150);
+            }, 120); // Sesuai dengan durasi CSS transition (120ms)
         }
 
         function showFloatingScore(points) {
@@ -572,7 +577,6 @@
             let moved = move(direction);
 
             if (moved) {
-                // Haptic & Audio
                 if (justMergedPoints > 0) {
                     triggerHaptic('merge');
                     playSound('merge');
@@ -593,7 +597,7 @@
             }
         }
 
-        // --- Controls Keyboard PC ---
+        // --- Keyboard (PC) ---
         document.addEventListener('keydown', (e) => {
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
                 e.preventDefault(); 
@@ -601,9 +605,8 @@
             }
         });
 
-        // --- Controls Swipe HP ---
-        let touchStartX = 0;
-        let touchStartY = 0;
+        // --- Swipe (Touch) ---
+        let touchStartX = 0; let touchStartY = 0;
         
         gameBoard.addEventListener('touchstart', e => {
             touchStartX = e.changedTouches[0].screenX;
@@ -611,18 +614,14 @@
         }, { passive: false });
 
         gameBoard.addEventListener('touchmove', e => {
-            e.preventDefault(); // Mengunci scroll saat nyentuh papan
+            e.preventDefault(); // Kunci scroll
         }, { passive: false });
 
         gameBoard.addEventListener('touchend', e => {
-            let touchEndX = e.changedTouches[0].screenX;
-            let touchEndY = e.changedTouches[0].screenY;
+            let dx = e.changedTouches[0].screenX - touchStartX;
+            let dy = e.changedTouches[0].screenY - touchStartY;
             
-            let dx = touchEndX - touchStartX;
-            let dy = touchEndY - touchStartY;
-            
-            // Sensitivitas Swipe
-            if (Math.abs(dx) < 30 && Math.abs(dy) < 30) return;
+            if (Math.abs(dx) < 25 && Math.abs(dy) < 25) return; // Lebih responsif
 
             if (Math.abs(dx) > Math.abs(dy)) {
                 if (dx > 0) handleInput('Right');
@@ -661,10 +660,13 @@
             }, 100);
         }
 
-        // Render saat ukuran layar HP berubah
-        window.addEventListener('resize', renderTiles);
+        // Saat layar diputar/berubah ukuran, kalkulasi ulang dan update posisi secara instan!
+        window.addEventListener('resize', () => {
+            initGridBg();
+            renderTiles();
+        });
 
-        // Mulai
+        // Mulai Game
         initGame();
 
     </script>
